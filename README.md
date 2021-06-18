@@ -1,3 +1,6 @@
-# LoggingBench
+#Logging Bench
 
-Collective efforts for creating a benchmark (ground truth dataset) for logging studies.
+## Requirements
+
+You may need to setup the following tools in UNIX environment
+ * SCC (https://github.com/boyter/scc)
