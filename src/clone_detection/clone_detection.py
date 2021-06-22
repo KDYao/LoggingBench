@@ -4,12 +4,15 @@ Clone detection in selected java projects
 import multiprocessing
 import os
 import logging
-import src.util.utils as utils
+import sys
 import pandas as pd
 import shutil
 import tarfile
 import glob
 import subprocess
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+import src.util.utils as utils
 
 logger = logging.getLogger(__name__)
 
