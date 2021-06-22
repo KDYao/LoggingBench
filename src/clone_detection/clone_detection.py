@@ -10,7 +10,7 @@ import shutil
 import tarfile
 import glob
 import subprocess
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import src.util.utils as utils
 
@@ -169,5 +169,5 @@ if __name__ == '__main__':
     # Load target df
     df = load_projects_list(args)
 
-    cdetec.clone_detection_in_project(df)
-    #parallel_run(df=df, func=cdetec.clone_detection_in_project)
+    #cdetec.clone_detection_in_project(df)
+    parallel_run(df=df, func=cdetec.clone_detection_in_project)
