@@ -40,6 +40,13 @@ class CloneDetection:
             repo_path = row['repo_path']
             repo_id = row['project_id']
 
+            # Save all results into a tar file
+            res_tar_f = os.path.join(self.res_dir, '_'.join([str(repo_id), os.path.basename(repo_path)]))
+
+            # Skip detecting if analyzed file already exists
+            # This is to handle cases when server breakdown
+            if os.path.isfile(res_tar_f): continue
+
             if not os.path.isfile(repo_path):
                 logger.error('Unable to find path: {}'.format(repo_path))
                 continue
@@ -85,8 +92,6 @@ class CloneDetection:
 
             # Move result to location
             nicad_output_list = glob.glob(tmp_out_proj_dir + '_{}*'.format(self.granularity))
-            # Save all results into a tar file
-            res_tar_f = os.path.join(self.res_dir, '_'.join([str(repo_id), os.path.basename(repo_path)]))
 
             with tarfile.open(res_tar_f, mode='w:gz') as tar:
                 for f_nicad_out in nicad_output_list:

@@ -136,7 +136,8 @@ def getPath(param_str: str):
         'NICAD_ROOT':{
             'DARWIN': '/Users/yaokundi/Documents/Project/2021/ExternalTools/NiCad-6.2',
             'LINUX': {
-                'BRAIN2': '/home/local/SAIL/kundi/configs/NiCad-6.2'
+                'BRAIN2': '/home/local/SAIL/kundi/configs/NiCad-6.2',
+                'PINKY': '/home/local/SAIL/kundi/configs/NiCad-6.2'
             }
         }
     }
