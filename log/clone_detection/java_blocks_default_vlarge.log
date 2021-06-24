@@ -1,0 +1,111 @@
+22-Jun-21 17:59:33 - 29849 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/24203553_eclipse_che.tar.gz
+22-Jun-21 18:05:01 - 29845 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/16634410_ianopolous_JPC.tar.gz
+22-Jun-21 18:08:28 - 29858 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/85029025_AionGermany_aion-germany.tar.gz
+22-Jun-21 18:10:48 - 29847 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/1958_infinispan_infinispan.tar.gz
+22-Jun-21 18:11:10 - 29840 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/108146325_alipay_alipay-sdk-java-all.tar.gz
+22-Jun-21 18:12:12 - 29852 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/3414374_gwtproject_gwt.tar.gz
+22-Jun-21 18:14:38 - 29854 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/449190_geosdi_geo-platform.tar.gz
+22-Jun-21 18:18:49 - 29846 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/18432613_Pushjet_Pushjet-Android.tar.gz
+22-Jun-21 18:20:31 - 29845 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/17549805_EgorKulikov_yaal.tar.gz
+22-Jun-21 18:20:32 - 29843 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/13582966_opennetworkinglab_onos.tar.gz
+22-Jun-21 18:20:34 - 29850 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/28334824_FlexoVM_flexovm.tar.gz
+22-Jun-21 18:21:49 - 29839 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/10131764_apache_incubator-flink.tar.gz
+22-Jun-21 18:22:34 - 29844 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/14361_xamarin_XobotOS.tar.gz
+22-Jun-21 18:25:23 - 29848 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/22205189_apache_ignite.tar.gz
+22-Jun-21 18:26:37 - 29856 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/63534528_ForgeRock_openam-community-edition.tar.gz
+22-Jun-21 18:30:36 - 29852 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/34249734_microsoftgraph_msgraph-sdk-android.tar.gz
+22-Jun-21 18:31:38 - 29851 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/31515051_ihmcrobotics_ihmc-open-robotics-software.tar.gz
+22-Jun-21 18:31:45 - 29858 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/85035459_oracle_graal.tar.gz
+22-Jun-21 18:32:46 - 29853 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/39068_apache_hadoop.tar.gz
+22-Jun-21 18:32:53 - 29847 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/20937322_CoprHD_coprhd-controller.tar.gz
+22-Jun-21 18:35:46 - 29840 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/109070_Teiid-Designer_teiid-designer.tar.gz
+22-Jun-21 18:39:45 - 29855 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/500132_magefree_mage.tar.gz
+22-Jun-21 18:45:00 - 29841 - ERROR - Error in running clone detection for project tdi-studio-se. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/11598286/Talend_tdi-studio-se default"
+22-Jun-21 18:50:27 - 29854 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/44919435_joekoolade_JOE.tar.gz
+22-Jun-21 18:51:41 - 29845 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/18369464_zstackorg_zstack.tar.gz
+22-Jun-21 18:55:26 - 29858 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/89965608_microsoftgraph_msgraph-sdk-java.tar.gz
+22-Jun-21 19:02:45 - 29843 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/1371250_oVirt_ovirt-engine.tar.gz
+22-Jun-21 19:24:10 - 29849 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/25445_android_platform_frameworks_base.tar.gz
+22-Jun-21 19:25:01 - 29856 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/7021075_googleads_googleads-java-lib.tar.gz
+22-Jun-21 19:30:41 - 29848 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/2249963_robovm_robovm.tar.gz
+22-Jun-21 19:43:22 - 29855 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/5022077_fanhongtao_JDK.tar.gz
+22-Jun-21 19:45:51 - 29844 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/14579966_sakaiproject_sakai.tar.gz
+22-Jun-21 19:46:08 - 29858 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/9373127_bytedeco_javacpp-presets.tar.gz
+22-Jun-21 19:48:02 - 29847 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/21314453_OpenJML_OpenJML.tar.gz
+22-Jun-21 20:03:54 - 29845 - ERROR - Error in running clone detection for project org.aspectj. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/1841809/eclipse_org.aspectj default"
+22-Jun-21 20:05:42 - 29840 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/112280422_kangjianwei_OpenJDK-11.tar.gz
+22-Jun-21 20:21:49 - 29854 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/44967_nuxeo_nuxeo.tar.gz
+22-Jun-21 20:33:56 - 29846 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/18584_AOKP_frameworks_base.tar.gz
+22-Jun-21 20:36:37 - 29842 - ERROR - Error in running clone detection for project corretto-11. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/125731236/corretto_corretto-11 default"
+22-Jun-21 20:57:23 - 29841 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/11625575_torakiki_pdfsam-v2.tar.gz
+22-Jun-21 21:04:36 - 29856 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/71812389_vespa-engine_vespa.tar.gz
+22-Jun-21 21:04:46 - 29851 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/32188479_Fermat-ORG_fermat.tar.gz
+22-Jun-21 21:10:09 - 29855 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/51339_gridgain_gridgain.tar.gz
+22-Jun-21 21:10:50 - 29845 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/18425785_espertechinc_esper.tar.gz
+22-Jun-21 21:24:55 - 29849 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/26591_hibernate_hibernate-orm.tar.gz
+22-Jun-21 21:33:32 - 29844 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/14807988_apache_flink.tar.gz
+22-Jun-21 21:36:04 - 29852 - ERROR - Error in running clone detection for project azure-sdk-for-java. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/343/WindowsAzure_azure-sdk-for-java default"
+22-Jun-21 21:36:27 - 29848 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/2281_gradle_gradle.tar.gz
+22-Jun-21 21:38:50 - 29850 - ERROR - Error in running clone detection for project MPS. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/29790/JetBrains_MPS default"
+22-Jun-21 21:47:40 - 29847 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/21597_geotools_geotools.tar.gz
+22-Jun-21 21:50:03 - 29840 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/11464591_OpenRock_OpenAM.tar.gz
+22-Jun-21 22:24:11 - 29857 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/75061625_OpenLiberty_open-liberty.tar.gz
+22-Jun-21 22:47:56 - 29849 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/27260690_graalvm_truffle.tar.gz
+22-Jun-21 22:48:07 - 29844 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/15905253_MIT-PAC_droidsafe-src.tar.gz
+22-Jun-21 22:53:59 - 29846 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/18651_geogebra_geogebra.tar.gz
+22-Jun-21 23:11:52 - 29844 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/16139487_GoogleCloudPlatform_gcloud-java.tar.gz
+22-Jun-21 23:31:55 - 29851 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/3281281_wildfly_wildfly.tar.gz
+22-Jun-21 23:34:47 - 29848 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/2291113_pentaho_pentaho-reporting.tar.gz
+22-Jun-21 23:42:23 - 29843 - ERROR - Error in running clone detection for project aws-sdk-java. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/1377549/aws_aws-sdk-java default"
+22-Jun-21 23:48:27 - 29840 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/11467439_Unidata_awips2.tar.gz
+23-Jun-21 00:07:34 - 29842 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/125766_openjdk-mirror_jdk7u-jdk.tar.gz
+23-Jun-21 00:13:44 - 29850 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/300140_apache_cxf.tar.gz
+23-Jun-21 00:22:00 - 29849 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/28034343_bugvm_bugvm.tar.gz
+23-Jun-21 00:27:11 - 29847 - ERROR - Error in running clone detection for project aliyun-openapi-java-sdk. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/22083871/aliyun_aliyun-openapi-java-sdk default"
+23-Jun-21 00:29:41 - 29856 - ERROR - Error in running clone detection for project groovy-eclipse. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/7292/groovy_groovy-eclipse default"
+23-Jun-21 00:30:38 - 29839 - ERROR - Error in running clone detection for project openMAXIMS. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/10245350/IMS-MAXIMS_openMAXIMS default"
+23-Jun-21 01:35:07 - 29841 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/116732166_corretto_corretto-8.tar.gz
+23-Jun-21 01:45:27 - 29848 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/232203_eclipse_cdt.tar.gz
+23-Jun-21 02:10:13 - 29846 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/18803580_frohoff_jdk8u-jdk.tar.gz
+23-Jun-21 02:26:07 - 29851 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/3318537_OpenNMS_opennms.tar.gz
+23-Jun-21 02:26:11 - 29842 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/12713_apache_hive.tar.gz
+23-Jun-21 02:32:53 - 29856 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/730516_eclipse_birt.tar.gz
+23-Jun-21 02:45:49 - 29857 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/773698_Helbrass_openjdk-fontfix.tar.gz
+23-Jun-21 02:50:26 - 29850 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/3092697_GregBowyer_ManagedRuntimeInitiative.tar.gz
+23-Jun-21 03:13:02 - 29853 - ERROR - Error in running clone detection for project liferay-portal. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/3981/liferay_liferay-portal default"
+23-Jun-21 03:27:38 - 29854 - ERROR - Error in running clone detection for project openjdk. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/4855989/dmlloyd_openjdk default"
+23-Jun-21 03:37:48 - 29839 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/10435619_Talend_tcommon-studio-se.tar.gz
+23-Jun-21 03:38:28 - 29851 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/33244201_Microsoft_team-explorer-everywhere.tar.gz
+23-Jun-21 03:56:58 - 29842 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/127164484_kangjianwei_LearningJDK.tar.gz
+23-Jun-21 03:57:47 - 29841 - ERROR - Error in running clone detection for project error-prone-javac. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/11782666/google_error-prone-javac default"
+23-Jun-21 04:05:55 - 29846 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/18803598_frohoff_jdk8u-dev-jdk.tar.gz
+23-Jun-21 04:13:04 - 29852 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/35846_JetBrains_kotlin.tar.gz
+23-Jun-21 04:22:13 - 29839 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/10475417_jamesagnew_hapi-fhir.tar.gz
+23-Jun-21 04:46:47 - 29850 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/30929002_metasfresh_metasfresh.tar.gz
+23-Jun-21 04:47:23 - 29839 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/10767720_Geomatys_geotoolkit.tar.gz
+23-Jun-21 04:47:59 - 29857 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/788898_deas_alfresco.tar.gz
+23-Jun-21 04:51:30 - 29841 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/11805998_payara_Payara.tar.gz
+23-Jun-21 05:06:19 - 29857 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/80214967_wanwanpp_jdk-source.tar.gz
+23-Jun-21 05:16:44 - 29857 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/8270239_rhq-project_rhq.tar.gz
+23-Jun-21 05:17:32 - 29853 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/4095_elastic_elasticsearch.tar.gz
+23-Jun-21 05:29:27 - 29853 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/4401815_opensourceBIM_BIMserver.tar.gz
+23-Jun-21 05:30:29 - 29853 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/44561068_GoogleCloudPlatform_google-cloud-java.tar.gz
+23-Jun-21 05:37:12 - 29855 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/55219_JetBrains_intellij-community.tar.gz
+23-Jun-21 05:40:12 - 29843 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/14054618_SpoonLabs_astor.tar.gz
+23-Jun-21 06:08:12 - 29843 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/1429606_aws_aws-sdk-android.tar.gz
+23-Jun-21 06:33:33 - 29855 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/62238_apache_camel.tar.gz
+23-Jun-21 07:04:42 - 29842 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/133692486_apache_netbeans.tar.gz
+23-Jun-21 16:59:25 - 60105 - ERROR - Error in running clone detection for project org.aspectj. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/1841809/eclipse_org.aspectj default"
+23-Jun-21 17:52:45 - 60101 - ERROR - Error in running clone detection for project tdi-studio-se. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/11598286/Talend_tdi-studio-se default"
+23-Jun-21 18:15:33 - 60107 - ERROR - Error in running clone detection for project aliyun-openapi-java-sdk. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/22083871/aliyun_aliyun-openapi-java-sdk default"
+23-Jun-21 18:31:27 - 60101 - ERROR - Error in running clone detection for project error-prone-javac. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/11782666/google_error-prone-javac default"
+23-Jun-21 18:46:53 - 60117 - ERROR - Error in running clone detection for project groovy-eclipse. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/7292/groovy_groovy-eclipse default"
+23-Jun-21 18:46:58 - 60111 - ERROR - Error in running clone detection for project MPS. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/29790/JetBrains_MPS default"
+23-Jun-21 19:09:48 - 60113 - ERROR - Error in running clone detection for project azure-sdk-for-java. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/343/WindowsAzure_azure-sdk-for-java default"
+23-Jun-21 19:44:18 - 60115 - ERROR - Error in running clone detection for project openjdk. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/4855989/dmlloyd_openjdk default"
+23-Jun-21 19:44:25 - 60102 - ERROR - Error in running clone detection for project corretto-11. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/125731236/corretto_corretto-11 default"
+23-Jun-21 20:02:21 - 60113 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/3759422_consulo_consulo.tar.gz
+23-Jun-21 20:13:08 - 60114 - ERROR - Error in running clone detection for project liferay-portal. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/3981/liferay_liferay-portal default"
+23-Jun-21 20:16:15 - 60103 - ERROR - Error in running clone detection for project aws-sdk-java. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/1377549/aws_aws-sdk-java default"
+23-Jun-21 20:21:49 - 60115 - INFO - Clone detection finished. Results are saved in ../../result/clone_detection/4873_apache_lucene-solr.tar.gz
+23-Jun-21 21:20:41 - 60099 - ERROR - Error in running clone detection for project openMAXIMS. Command: ./nicad6 blocks java /home/local/SAIL/kundi/project/LoggingBench/temp/projects/10245350/IMS-MAXIMS_openMAXIMS default"
