@@ -272,3 +272,20 @@ def create_folder_if_not_exist(d):
     """
     if not os.path.isdir(d):
         os.makedirs(d)
+
+def print_msg_box(msg, indent=1, width=None, title=None):
+    """
+    Print message-box with optional title.
+    Ref: https://stackoverflow.com/questions/39969064/how-to-print-a-message-box-in-python/40080853
+    """
+    lines = msg.split('\n')
+    space = " " * indent
+    if not width:
+        width = max(map(len, lines))
+    box = f'╔{"═" * (width + indent * 2)}╗\n'  # upper_border
+    if title:
+        box += f'║{space}{title:<{width}}{space}║\n'  # title
+        box += f'║{space}{"-" * len(title):<{width}}{space}║\n'  # underscore
+    box += ''.join([f'║{space}{line:<{width}}{space}║\n' for line in lines])
+    box += f'╚{"═" * (width + indent * 2)}╝'  # lower_border
+    print(box)

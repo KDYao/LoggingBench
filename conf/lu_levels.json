@@ -1,0 +1,10 @@
+{
+"acl": ["trace", "debug", "info", "warn", "error", "fatal"],
+"androidlog": ["v", "d", "i", "w"],
+"timber.log.timber": ["v", "d", "i", "w"],
+"jul": ["severe", "warning", "info", "config", "fine", "finer", "finest"],
+"log4j": ["trace", "debug", "info", "warn", "error", "fatal"],
+"log4j2": ["trace", "debug", "info", "warn", "error", "fatal"],
+"logback": ["trace", "debug", "info", "warn", "error"],
+"slf4j": ["trace", "debug", "info", "warn", "error"]
+}
