@@ -10,6 +10,7 @@ import shutil
 import tarfile
 import glob
 import subprocess
+from pandarallel import pandarallel
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 import src.util.utils as utils
@@ -161,6 +162,22 @@ def parallel_run(df, func):
     [j.start() for j in jobs]
     [j.join() for j in jobs]
 
+def skip_examined_projects(df):
+    """
+    Skip projects that have already been examiend
+    Parameters
+    ----------
+    df
+
+    Returns
+    -------
+
+    """
+    pandarallel.initialize()
+    df['Examined'] = df['repo_path'].parallel_apply(lambda x: os.path.isfile(x))
+    df.drop(df.loc[df['Examined'] is True].index, inplace=True)
+    return df
+
 if __name__ == '__main__':
     args, _ = utils.parse_args_clone_detection()
     # Compressed files directory
@@ -173,6 +190,7 @@ if __name__ == '__main__':
     logging_setup(args)
     # Load target df
     df = load_projects_list(args)
-
+    # Skip projects that have already been examined
+    skip_examined_projects(df)
     #cdetec.clone_detection_in_project(df)
     parallel_run(df=df, func=cdetec.clone_detection_in_project)
