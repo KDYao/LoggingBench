@@ -3,8 +3,8 @@ This script removes logging statements form java projects
 """
 import shutil
 import tarfile
-
-import src.util.utils as ut
+import threading
+from queue import Queue
 import os
 import re
 import itertools
@@ -12,8 +12,11 @@ import json
 import pandas as pd
 import ast
 import subprocess
+import multiprocessing
 from collections import defaultdict
-
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+import src.util.utils as ut
 logger = ut.setlogger(
     f_log='../../log/log_removal/log_removal.log',
     logger="log_remover",
@@ -192,28 +195,80 @@ class LogRemover:
                                                                         proj_size=total_projects_size,
                                                                         num_f_java=total_num_java,
                                                                         java_size=total_uncompressed_java_size))
+        #self.remove_logging_single(df=df_merged, repeat_idx=repeat_idx)
+        self.remove_logging_multiprocessing(df=df_merged, repeat_idx=repeat_idx)
 
+    def remove_logging_single(self, df, repeat_idx):
+        """
+        Remove logging without parallelism
+        Parameters
+        ----------
+        df
+
+        Returns
+        -------
+
+        """
+        # No Parallel
+        log_remove_lst = [self.remove_logging(row=row, repeat_idx=repeat_idx) for idx, row in df.iterrows()]
+        for lrm in log_remove_lst:
+            if lrm is not None:
+                log_remove_repo_id, log_remove_repo_detail = lrm
+                self.logging_remove_json[log_remove_repo_id] = log_remove_repo_detail
+        self.dump_remove_logging_result()
+
+
+    def remove_logging_multiprocessing(self, df, repeat_idx):
         # Preserve for parallelism
-        for df in ut.chunkify(df_merged, ut.getWorkers()):
-            log_remove_lst = [self.remove_logging(row=row, repeat_idx=repeat_idx) for idx, row in df.iterrows()]
-            for lrm in log_remove_lst:
-                if lrm is not None:
-                    log_remove_repo_id, log_remove_repo_detail = lrm
-                    self.logging_remove_json[log_remove_repo_id] = log_remove_repo_detail
-            # Save Json
-            with lock:
-                if os.path.isfile(self.f_removal):
-                    with open(self.f_removal, 'r+') as f_update:
-                        f_update.seek(0)
-                        f_update.write(json.dumps(self.logging_remove_json, indent=4))
-                        f_update.truncate()
-                else:
-                    with open(self.f_removal, 'w') as f_update:
-                        f_update.write(json.dumps(self.logging_remove_json, indent=4))
+        jobs = []
+        for d in ut.chunkify(df, ut.getWorkers()):
+            jobs.append(
+                multiprocessing.Process(target=self.remove_logging_multithreading, args=(d, repeat_idx, ))
+            )
+        [j.start() for j in jobs]
+        [j.join() for j in jobs]
 
 
+    def remove_logging_multithreading(self, df, repeat_idx):
+        q = Queue()
+        ts = [threading.Thread(target=self.remove_logging, args=(row, repeat_idx, q, )) for idx, row in df.iterrows()]
+        for t in ts: t.start()
+        for t in ts: t.join()
 
-    def remove_logging(self, row, repeat_idx):
+        log_remove_lst = []
+        while not q.empty():
+            log_remove_lst.append(q.get())
+            q.task_done()
+
+        logging_remove_json_new = defaultdict(dict)
+        for lrm in log_remove_lst:
+            if lrm is not None:
+                log_remove_repo_id, log_remove_repo_detail = lrm
+                logging_remove_json_new[log_remove_repo_id] = log_remove_repo_detail
+
+        self.dump_remove_logging_result(logging_remove_json_new)
+
+
+    def dump_remove_logging_result(self, new_json):
+        """
+        Save removed logging statements in JSON
+        Returns
+        -------
+
+        """
+        # Save Json
+        with lock:
+            if os.path.isfile(self.f_removal):
+                with open(self.f_removal, 'r+') as f_update:
+                    f_update.seek(0)
+                    f_update.write(json.dumps(new_json, indent=4))
+                    f_update.truncate()
+            else:
+                with open(self.f_removal, 'w') as f_update:
+                    f_update.write(json.dumps(new_json, indent=4))
+
+
+    def remove_logging(self, row, repeat_idx, q=None):
         """
         Decompress selected java projects and remove logging statements from them
         Parameters
@@ -240,10 +295,10 @@ class LogRemover:
             return
 
         # FIXME:###### Only for local testing
-        ############################
+        ###########################
         repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
         if not os.path.isfile(repo_path): return
-        ############################
+        ###########################
 
         if not os.path.isfile(repo_path):
             logger.error('Cannot find project %s at %s' % (owner_repo, repo_path))
@@ -283,6 +338,8 @@ class LogRemover:
             except Exception as ex:
                 logger.error('Fail to remove log for {f}; {ex}'.format(f, str(ex)))
 
+        if q is not None:
+            q.put([repo_id, proj_logging_removal])
         # Record result in json
         return (repo_id, proj_logging_removal)
 
@@ -310,7 +367,6 @@ class LogRemover:
         # If only keep java files
         if keep_java_only:
             subprocess.Popen("find . -type f ! -name '*.java' -delete", shell=True, cwd=out_d).wait()
-
 
 
 if __name__ == '__main__':
