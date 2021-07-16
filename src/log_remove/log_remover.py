@@ -22,7 +22,8 @@ lock = ut.setRWLock()
 
 class LogRemover:
     def __init__(self, f_removal,
-                 sample_dir='../../result/proj_sample', f_log_stats='../../conf/log_all_stats.csv',
+                 sample_dir='../../result/proj_sample',
+                 f_log_stats='../../conf/log_all_stats.csv',
                  repeats=1):
         self.sample_dir = sample_dir
         if not os.path.isdir(sample_dir):
@@ -35,6 +36,7 @@ class LogRemover:
                 self.logging_remove_json = json.load(r)
         else:
             self.logging_remove_json = defaultdict(dict)
+        self.d_proj_size = '../../result/proj_size'
         self.sample_sizes = ['small', 'medium', 'large', 'vlarge']
         self.repeats = repeats
         self.lu_levels = self.load_lu_levels()
@@ -148,6 +150,21 @@ class LogRemover:
                 df_projects_sample = df_projects.sample(frac=sample_percentage, random_state=repeat)
                 df_projects_sample.to_csv(f_projects_sample, index=False)
 
+    def get_total_project_size(self, proj_id_list):
+        """
+        Calculate the total size of selected projects after decompression
+        Returns
+        -------
+        """
+        # Merge all projects from size calculation
+        df_merged = pd.concat(
+            [ut.csv_loader(
+                os.path.join(self.d_proj_size, 'filesize_mb_{}.csv'.format(size_type))
+            ) for size_type in self.sample_sizes])
+        df_merged = df_merged.loc[df_merged['project_id'].isin(proj_id_list)]
+        return ut.convert_size(df_merged['size_mb'].sum() * 1024 * 1024)
+
+
     def logger_detector(self, repeat_idx):
         """
         Detect java files with logging statements such as logger, etc. followed by a function call.
@@ -161,17 +178,20 @@ class LogRemover:
             ) for size_type in self.sample_sizes])
 
         total_projects_count = df_merged['project_id'].count()
+        total_projects_size = self.get_total_project_size(list(df_merged['project_id']))
         total_num_java = df_merged['Count'].sum()
-        total_uncompressed_size = ut.convert_size(df_merged['Bytes'].sum())
+        total_uncompressed_java_size = ut.convert_size(df_merged['Bytes'].sum())
         # TODO: Also add the size of total sizes
         ut.print_msg_box('Projects Summary\n'
                          'Repeat ID:{rep_id}\n'
                          'Total Projects:{proj_count}\n'
+                         'Total Projects Size:{proj_size}\n'
                          'Total Number of Java Files:{num_f_java}\n'
-                         'Total Sizes of Java Files:{total_size}'.format(rep_id=repeat_idx,
-                                                                         proj_count=total_projects_count,
-                                                                         num_f_java=total_num_java,
-                                                                         total_size=total_uncompressed_size))
+                         'Total Sizes of Java Files:{java_size}'.format(rep_id=repeat_idx,
+                                                                        proj_count=total_projects_count,
+                                                                        proj_size=total_projects_size,
+                                                                        num_f_java=total_num_java,
+                                                                        java_size=total_uncompressed_java_size))
 
         # Preserve for parallelism
         for df in ut.chunkify(df_merged, ut.getWorkers()):
@@ -206,10 +226,16 @@ class LogRemover:
 
         """
         repo_path = row['repo_path']
-        repo_id = row['project_id']
+        repo_id = int(row['project_id'])
         owner_repo = row['owner_repo']
+
+        # Temp location to store project
+        tmp_out_dir = os.path.abspath(os.path.join(
+            *[self.d_clean_project_root, 'repeat_%d' % repeat_idx, str(repo_id)]
+        ))
+
         # Skip remove logging if this project has already been log removed
-        if owner_repo in self.logging_remove_json.keys():
+        if str(repo_id) in self.logging_remove_json.keys() and os.path.isdir(tmp_out_dir):
             print('Project %s has already been log removed; skip' % owner_repo)
             return
 
@@ -222,15 +248,19 @@ class LogRemover:
         if not os.path.isfile(repo_path):
             logger.error('Cannot find project %s at %s' % (owner_repo, repo_path))
             return
-
+        print('Start decompression and logging removal from %s' % owner_repo)
         # Decompress
-        d_project = self.decompress_project(f_tar=repo_path, repo_id=repo_id, repeat_idx=repeat_idx)
+        self.decompress_project(f_tar=repo_path, out_d=tmp_out_dir)
 
         general_lus = ast.literal_eval(row['general_lus'])
         function_names = set(itertools.chain.from_iterable([self.lu_levels[lu] for lu in general_lus]))
         cmd = 'grep -rinE "(.*log.*)\.({funcs})\(.*\)" --include=\*.java .'.format(
             funcs='|'.join(function_names))
-        out = subprocess.check_output(cmd, shell=True, cwd=d_project).decode('utf-8')
+        out_raw = subprocess.check_output(cmd, shell=True, cwd=tmp_out_dir)
+        try:
+            out = out_raw.decode('utf-8')
+        except UnicodeError:
+            out = out_raw.decode('iso-8859-1')
         # Process results
         re_match = re.compile(r'^./(.*\.java)\:(\d+)\:(.*)$')
         proj_logging_removal = defaultdict(lambda: defaultdict(str))
@@ -241,10 +271,11 @@ class LogRemover:
 
         # Iterate each file and remove logging statements
         for f_path, line_info in proj_logging_removal.items():
-            f = os.path.join(d_project, f_path)
+            f = os.path.join(tmp_out_dir, f_path)
             # Remove logging statements by line number
-            cmd = "awk '%s {gsub(/.*/,\"\")}; {print}' %s > %s" % \
-                  (' || '.join(['NR == %d' % x for x in line_info.keys()]), f, f)
+            # Cannot write to original file directly since > has a higher priority
+            cmd = "awk '%s {gsub(/.*/,\"\")}; {print}' %s > %s_lrm_temp && mv %s_lrm_temp %s" % \
+                  (' || '.join(['NR == %d' % x for x in line_info.keys()]), f, f, f, f)
             p = subprocess.Popen(cmd, shell=True)
 
             try:
@@ -255,7 +286,7 @@ class LogRemover:
         # Record result in json
         return (repo_id, proj_logging_removal)
 
-    def decompress_project(self, f_tar, repo_id, repeat_idx):
+    def decompress_project(self, f_tar, out_d):
         """
         Decompress project into a temporary location
         Parameters
@@ -267,18 +298,14 @@ class LogRemover:
         -------
 
         """
-        tmp_out_dir = os.path.abspath(os.path.join(
-            *[self.d_clean_project_root, 'repeat_%d' % repeat_idx, str(repo_id)]
-        ))
         # Clean temp project if it exists. This could happen when a previous job collapsed
-        if os.path.isdir(tmp_out_dir):
-            shutil.rmtree(tmp_out_dir)
+        if os.path.isdir(out_d):
+            shutil.rmtree(out_d)
 
         # Decompress tar to temp folder
         tar = tarfile.open(f_tar, "r:gz")
-        tar.extractall(path=tmp_out_dir)
+        tar.extractall(path=out_d)
         tar.close()
-        return tmp_out_dir
 
 
 if __name__ == '__main__':
