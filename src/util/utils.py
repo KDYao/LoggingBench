@@ -1,3 +1,4 @@
+import math
 import os
 import argparse
 import platform
@@ -28,7 +29,7 @@ def check_existance(f, type=''):
         if os.path.isdir(f):
             return f
         else:
-            raise NotADirectoryError('Folder not exist: %s' % f)
+            raise FileNotFoundError('Folder not exist: %s' % f)
     elif type == "f":
         if os.path.isfile(f):
             return f
@@ -39,7 +40,7 @@ def check_existance(f, type=''):
         if os.path.isdir(f) or os.path.isfile(f):
             return f
         else:
-            raise AttributeError('Path not exist: %s' % f)
+            raise FileNotFoundError('Path not exist: %s' % f)
 
 def parse_args_size_level(*args, **kwargs):
     """
@@ -111,13 +112,14 @@ def parse_args_clone_detection(*args, **kwargs):
     return parser.parse_known_args()
 
 
-def getPath(param_str: str):
+def getPath(param_str: str, ischeck=True):
     """
     Get path according to current OS platform/System Name
     -------
     Parameters
     -------
     param_str: The string of parameters
+    ischeck: Check if path exists
     ------
     Returns
     -------
@@ -139,7 +141,17 @@ def getPath(param_str: str):
                 'BRAIN2': '/home/local/SAIL/kundi/configs/NiCad-6.2',
                 'PINKY': '/home/local/SAIL/kundi/configs/NiCad-6.2'
             }
-        }
+        },
+        'CLEANED_PROJ_ROOT': {
+            # OS
+            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/temp/projects_clean',
+            'LINUX': {
+                # TODO: FIXME
+                'BRAIN2': '',
+                'PINKY': '',
+                'COMPUTECANADA': ''
+            }
+        },
     }
 
     try:
@@ -156,7 +168,10 @@ def getPath(param_str: str):
     except Exception as e:
         raise RuntimeError('Error getting path for %s: %s' % (param_str, e))
 
-    return check_existance(p)
+    if ischeck:
+        return check_existance(p)
+    else:
+        return p
 
 
 def getWorkers(cpus=None):
@@ -245,7 +260,7 @@ def output_prepare(f):
         os.remove(os.path.abspath(f))
 
 
-def setlogger(f_log, level=logging.INFO):
+def setlogger(f_log, logger=None, level=logging.INFO):
     if not os.path.isdir(os.path.dirname(f_log)):
         os.makedirs(os.path.dirname(f_log))
     logging.basicConfig(
@@ -253,6 +268,20 @@ def setlogger(f_log, level=logging.INFO):
         level=level,
         format='%(asctime)s - %(process)d - %(levelname)s - %(message)s',
         datefmt='%d-%b-%y %H:%M:%S')
+    if logger:
+        return logging.getLogger(logger)
+    else:
+        return logging.getLogger()
+
+def setRWLock():
+    # Setup io lock
+    try:
+        from readerwriterlock import rwlock
+        lock = rwlock.RWLockWrite().gen_wlock()
+    except ImportError:
+        from threading import Lock
+        lock = Lock()
+    return lock
 
 def csv_loader(f):
     if not os.path.isfile(f):
@@ -289,3 +318,23 @@ def print_msg_box(msg, indent=1, width=None, title=None):
     box += ''.join([f'║{space}{line:<{width}}{space}║\n' for line in lines])
     box += f'╚{"═" * (width + indent * 2)}╝'  # lower_border
     print(box)
+
+
+def convert_size(size_bytes):
+    """
+    Convert bytes to KB, MB, etc.
+    Parameters
+    ----------
+    size_bytes
+
+    Returns
+    -------
+
+    """
+    if size_bytes == 0:
+       return "0B"
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 2)
+    return "%s %s" % (s, size_name[i])

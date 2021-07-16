@@ -1,23 +1,46 @@
 """
 This script removes logging statements form java projects
 """
+import shutil
+import tarfile
+
 import src.util.utils as ut
 import os
+import re
+import itertools
 import json
-import random
 import pandas as pd
+import ast
+import subprocess
 from collections import defaultdict
 
+logger = ut.setlogger(
+    f_log='../../log/log_removal/log_removal.log',
+    logger="log_remover",
+)
+lock = ut.setRWLock()
+
 class LogRemover:
-    def __init__(self, sample_dir='../../result/proj_sample', f_log_stats='../../conf/log_all_stats.csv',
+    def __init__(self, f_removal,
+                 sample_dir='../../result/proj_sample', f_log_stats='../../conf/log_all_stats.csv',
                  repeats=1):
         self.sample_dir = sample_dir
         if not os.path.isdir(sample_dir):
             os.makedirs(sample_dir)
+        self.f_removal = f_removal
+        ut.create_folder_if_not_exist(os.path.dirname(f_removal))
+        # f_removal records processed files and lines in JSON
+        if os.path.isfile(f_removal):
+            with open(f_removal) as r:
+                self.logging_remove_json = json.load(r)
+        else:
+            self.logging_remove_json = defaultdict(dict)
         self.sample_sizes = ['small', 'medium', 'large', 'vlarge']
         self.repeats = repeats
         self.lu_levels = self.load_lu_levels()
         self.df_proj_lus = self.load_lu_per_project(f_log_stats)
+        self.d_clean_project_root = ut.getPath('CLEANED_PROJ_ROOT', ischeck=False)
+        ut.create_folder_if_not_exist(self.d_clean_project_root)
         # Generate sampled projects from each size
         self.project_sample()
 
@@ -92,7 +115,7 @@ class LogRemover:
         """
         df = pd.merge(df, self.df_proj_lus, on='project_id')
         df[['is_general', 'general_lus']] = df.apply(func=self.filter_row, axis=1, result_type='expand')
-        return df[df['is_general'] == True]
+        return df[df['is_general'] is True]
 
 
 
@@ -125,13 +148,141 @@ class LogRemover:
                 df_projects_sample = df_projects.sample(frac=sample_percentage, random_state=repeat)
                 df_projects_sample.to_csv(f_projects_sample, index=False)
 
-    def logger_detector(self):
+    def logger_detector(self, repeat_idx):
         """
         Detect java files with logging statements such as logger, etc. followed by a function call.
         Returns
         -------
         """
+        # Merge all sampled projects under the same repeat index
+        df_merged = pd.concat(
+            [ut.csv_loader(
+                os.path.join(self.sample_dir, 'sample_{}_sloc_{}.csv'.format(repeat_idx, size_type))
+            ) for size_type in self.sample_sizes])
+
+        total_projects_count = df_merged['project_id'].count()
+        total_num_java = df_merged['Count'].sum()
+        total_uncompressed_size = ut.convert_size(df_merged['Bytes'].sum())
+        # TODO: Also add the size of total sizes
+        ut.print_msg_box('Projects Summary\n'
+                         'Repeat ID:{rep_id}\n'
+                         'Total Projects:{proj_count}\n'
+                         'Total Number of Java Files:{num_f_java}\n'
+                         'Total Sizes of Java Files:{total_size}'.format(rep_id=repeat_idx,
+                                                                         proj_count=total_projects_count,
+                                                                         num_f_java=total_num_java,
+                                                                         total_size=total_uncompressed_size))
+
+        # Preserve for parallelism
+        for df in ut.chunkify(df_merged, ut.getWorkers()):
+            log_remove_lst = [self.remove_logging(row=row, repeat_idx=repeat_idx) for idx, row in df.iterrows()]
+            for lrm in log_remove_lst:
+                if lrm is not None:
+                    log_remove_repo_id, log_remove_repo_detail = lrm
+                    self.logging_remove_json[log_remove_repo_id] = log_remove_repo_detail
+            # Save Json
+            with lock:
+                if os.path.isfile(self.f_removal):
+                    with open(self.f_removal, 'r+') as f_update:
+                        f_update.seek(0)
+                        f_update.write(json.dumps(self.logging_remove_json, indent=4))
+                        f_update.truncate()
+                else:
+                    with open(self.f_removal, 'w') as f_update:
+                        f_update.write(json.dumps(self.logging_remove_json, indent=4))
+
+
+
+    def remove_logging(self, row, repeat_idx):
+        """
+        Decompress selected java projects and remove logging statements from them
+        Parameters
+        ----------
+        row: dataframe row, records the information of a project
+        repeat_idx: The repeat index of current experiment
+
+        Returns
+        -------
+
+        """
+        repo_path = row['repo_path']
+        repo_id = row['project_id']
+        owner_repo = row['owner_repo']
+        # Skip remove logging if this project has already been log removed
+        if owner_repo in self.logging_remove_json.keys():
+            print('Project %s has already been log removed; skip' % owner_repo)
+            return
+
+        # FIXME:###### Only for local testing
+        ############################
+        repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
+        if not os.path.isfile(repo_path): return
+        ############################
+
+        if not os.path.isfile(repo_path):
+            logger.error('Cannot find project %s at %s' % (owner_repo, repo_path))
+            return
+
+        # Decompress
+        d_project = self.decompress_project(f_tar=repo_path, repo_id=repo_id, repeat_idx=repeat_idx)
+
+        general_lus = ast.literal_eval(row['general_lus'])
+        function_names = set(itertools.chain.from_iterable([self.lu_levels[lu] for lu in general_lus]))
+        cmd = 'grep -rinE "(.*log.*)\.({funcs})\(.*\)" --include=\*.java .'.format(
+            funcs='|'.join(function_names))
+        out = subprocess.check_output(cmd, shell=True, cwd=d_project).decode('utf-8')
+        # Process results
+        re_match = re.compile(r'^./(.*\.java)\:(\d+)\:(.*)$')
+        proj_logging_removal = defaultdict(lambda: defaultdict(str))
+        for line in out.split('\n'):
+            if line == "": continue
+            f_path, line_num, line_content = re_match.match(line).groups()
+            proj_logging_removal[f_path][int(line_num)] = line_content
+
+        # Iterate each file and remove logging statements
+        for f_path, line_info in proj_logging_removal.items():
+            f = os.path.join(d_project, f_path)
+            # Remove logging statements by line number
+            cmd = "awk '%s {gsub(/.*/,\"\")}; {print}' %s > %s" % \
+                  (' || '.join(['NR == %d' % x for x in line_info.keys()]), f, f)
+            p = subprocess.Popen(cmd, shell=True)
+
+            try:
+                p.communicate()
+            except Exception as ex:
+                logger.error('Fail to remove log for {f}; {ex}'.format(f, str(ex)))
+
+        # Record result in json
+        return (repo_id, proj_logging_removal)
+
+    def decompress_project(self, f_tar, repo_id, repeat_idx):
+        """
+        Decompress project into a temporary location
+        Parameters
+        ----------
+        f_tar
+        repo_id
+
+        Returns
+        -------
+
+        """
+        tmp_out_dir = os.path.abspath(os.path.join(
+            *[self.d_clean_project_root, 'repeat_%d' % repeat_idx, str(repo_id)]
+        ))
+        # Clean temp project if it exists. This could happen when a previous job collapsed
+        if os.path.isdir(tmp_out_dir):
+            shutil.rmtree(tmp_out_dir)
+
+        # Decompress tar to temp folder
+        tar = tarfile.open(f_tar, "r:gz")
+        tar.extractall(path=tmp_out_dir)
+        tar.close()
+        return tmp_out_dir
 
 
 if __name__ == '__main__':
-    logremover = LogRemover()
+    f_removal = '../../result/log_remove/logging_removal_lines.json'
+    logremover = LogRemover(f_removal)
+    for repeat_idx in range(1, 1 + logremover.repeats):
+        logremover.logger_detector(repeat_idx)
