@@ -147,8 +147,8 @@ def getPath(param_str: str, ischeck=True):
             'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/temp/projects_clean',
             'LINUX': {
                 # TODO: FIXME
-                'BRAIN2': '',
-                'PINKY': '',
+                'BRAIN2': '/home/local/SAIL/kundi/project/LoggingBench/temp/projects_clean',
+                'PINKY': '/home/local/SAIL/kundi/project/LoggingBench/temp/projects_clean',
                 'COMPUTECANADA': ''
             }
         },
