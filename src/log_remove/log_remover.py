@@ -250,7 +250,7 @@ class LogRemover:
             return
         print('Start decompression and logging removal from %s' % owner_repo)
         # Decompress
-        self.decompress_project(f_tar=repo_path, out_d=tmp_out_dir)
+        self.decompress_project(f_tar=repo_path, out_d=tmp_out_dir, keep_java_only=True)
 
         general_lus = ast.literal_eval(row['general_lus'])
         function_names = set(itertools.chain.from_iterable([self.lu_levels[lu] for lu in general_lus]))
@@ -286,7 +286,7 @@ class LogRemover:
         # Record result in json
         return (repo_id, proj_logging_removal)
 
-    def decompress_project(self, f_tar, out_d):
+    def decompress_project(self, f_tar, out_d, keep_java_only=True):
         """
         Decompress project into a temporary location
         Parameters
@@ -306,6 +306,11 @@ class LogRemover:
         tar = tarfile.open(f_tar, "r:gz")
         tar.extractall(path=out_d)
         tar.close()
+
+        # If only keep java files
+        if keep_java_only:
+            subprocess.Popen("find . -type f ! -name '*.java' -delete", shell=True, cwd=out_d).wait()
+
 
 
 if __name__ == '__main__':
