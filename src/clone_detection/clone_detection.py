@@ -123,7 +123,7 @@ def logging_setup(args):
 
     # Set logger
     utils.setlogger(f_log=os.path.abspath('../../log/clone_detection/{}.log'.format(
-        '_'.join([args.language, args.granularity, args.clonetype, size_types_str]),
+        '_'.join([args.language, args.granularity, args.clonetype, size_types_str]), logger='clone_detection',
         level=logging.INFO
     )))
 
