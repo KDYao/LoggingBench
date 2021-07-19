@@ -294,11 +294,11 @@ class LogRemover:
             print('Project %s has already been log removed; skip' % owner_repo)
             return
 
-        # FIXME:###### Only for local testing
-        ###########################
-        repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
-        if not os.path.isfile(repo_path): return
-        ###########################
+        # # FIXME:###### Only for local testing
+        # ###########################
+        # repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
+        # if not os.path.isfile(repo_path): return
+        # ###########################
 
         if not os.path.isfile(repo_path):
             logger.error('Cannot find project %s at %s' % (owner_repo, repo_path))

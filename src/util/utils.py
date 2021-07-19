@@ -128,7 +128,7 @@ def getPath(param_str: str, ischeck=True):
     pathes = {
         'REPO_ZIPPED_ROOT': {
             # OS
-            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/test',
+            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/test/text_projects',
             'LINUX': {
                 'BRAIN2': '/home/local/SAIL/kundi/BACKUP/dataset/GitJavaLoggingRepos',
                 'PINKY': '/home/local/SAIL/kundi/BACKUP/dataset/GitJavaLoggingRepos',
