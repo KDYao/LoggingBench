@@ -365,28 +365,6 @@ class LogRemover:
         self.remove_logging_by_linenum(dict_removal=proj_logging_removal, d=d, function_names=function_names)
         return proj_logging_removal
 
-    def logging_remover_parenthesis_matching(self, d, function_names):
-        """
-        Find full logging statements by parenthesis matching
-        This is halfly done but we already decided to abandon this approach
-        Parameters
-        ----------
-        d
-        function_names
-
-        Returns
-        -------
-
-        """
-        # FIXME: Remove this function
-        proj_logging_removal = self.single_line_grep_logging(function_names=function_names, d=d)
-
-        # Iterate and filtering
-        for f_path, f_info in proj_logging_removal.items():
-            for line_num, line_content in f_info.items():
-                line = line_content.strip().lower()
-                is_normal = self.check_normal_logging(line)
-
     def check_lambda(self, line):
         """
         Check if the source code line contain lambda usage
@@ -479,9 +457,18 @@ class LogRemover:
         -------
 
         """
-
-        cmd = """grep -ri "%s" --include=*.java . | grep -E "%s" | awk '{print $1}'""" % (keyword, ('|'.join(function_names)))
-        out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
+        try:
+            cmd = """grep -ri "%s" --include=*.java . | grep -E "%s" | awk '{print $1}'""" % (keyword, ('|'.join(function_names)))
+            out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
+        except Exception:
+            logger.warn('Grepping command <-- %s -->failed at %s' % (cmd, d))
+            # Rename all files with special characters
+            cmd_rename = r"find . -name '*.java' -exec rename 's/[?<>\$\\:*|\"]/_/g' {} \;"
+            subprocess.Popen(cmd_rename, shell=True, cwd=d).wait()
+            # Redo grepping (not using recursion since we are uncertain if the unknown errors will cause an infinite loop)
+            cmd = """grep -ri "%s" --include=*.java . | grep -E "%s" | awk '{print $1}'""" % (
+            keyword, ('|'.join(function_names)))
+            out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         try:
             out = out_raw.decode('utf-8')
         except UnicodeError:
@@ -500,16 +487,22 @@ class LogRemover:
         Returns
         -------
         """
+        proj_logging_removal = defaultdict(lambda: defaultdict(dict))
+
         cmd = 'grep -rinE "(.*log.*)\.({funcs})\(.*\)" --include=\*.java .'.format(
             funcs='|'.join(function_names))
-        out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
+        try:
+            out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
+        except subprocess.CalledProcessError as e:
+            print(e)
+            logger.error('Fail to excute command %s at %s' % (cmd, d))
+            return proj_logging_removal
         try:
             out = out_raw.decode('utf-8')
         except UnicodeError:
             out = out_raw.decode('iso-8859-1')
         # Process results
         re_match = re.compile(r'^./(.*\.java)\:(\d+)\:(.*)$')
-        proj_logging_removal = defaultdict(lambda: defaultdict(dict))
         for line in out.split('\n'):
             if line == "": continue
             f_path, line_num, line_content = re_match.match(line).groups()
