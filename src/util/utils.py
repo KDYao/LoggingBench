@@ -112,7 +112,7 @@ def parse_args_clone_detection(*args, **kwargs):
     return parser.parse_known_args()
 
 
-def getPath(param_str: str, ischeck=True):
+def getPath(param_str: str, ischeck=False):
     """
     Get path according to current OS platform/System Name
     -------
@@ -128,7 +128,7 @@ def getPath(param_str: str, ischeck=True):
     pathes = {
         'REPO_ZIPPED_ROOT': {
             # OS
-            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/test/text_projects',
+            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/test/test_projects',
             'LINUX': {
                 'BRAIN2': '/home/local/SAIL/kundi/BACKUP/dataset/GitJavaLoggingRepos',
                 'PINKY': '/home/local/SAIL/kundi/BACKUP/dataset/GitJavaLoggingRepos',
@@ -146,9 +146,16 @@ def getPath(param_str: str, ischeck=True):
             # OS
             'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/temp/projects_clean',
             'LINUX': {
-                # TODO: FIXME
                 'BRAIN2': '/home/local/SAIL/kundi/project/LoggingBench/temp/projects_clean',
                 'PINKY': '/home/local/SAIL/kundi/project/LoggingBench/temp/projects_clean',
+                'COMPUTECANADA': ''
+            }
+        },
+        'CLEAN_REPO_ARCHIVE_ROOT': {
+            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/test/cleaned_projects',
+            'LINUX': {
+                'BRAIN2': '/home/local/SAIL/kundi/BACKUP/dataset/JavaRepoLoggingRemoved',
+                'PINKY': '/home/local/SAIL/kundi/BACKUP/dataset/JavaRepoLoggingRemoved',
                 'COMPUTECANADA': ''
             }
         },
@@ -173,6 +180,15 @@ def getPath(param_str: str, ischeck=True):
     else:
         return p
 
+def get_proj_root():
+    """
+    Get project root
+    Returns
+    -------
+
+    """
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 def getWorkers(cpus=None):
     """
@@ -193,7 +209,7 @@ def getWorkers(cpus=None):
             raise TypeError('Unrecogzied input type %s' % str(cpus.__name__))
     limit_usage_machines = ['brain2', 'pinky']
     if socket.gethostname().lower() in limit_usage_machines:
-        return cpu_count // 4
+        return cpu_count // 8
     else:
         # Use all cpus if not on SAIL servers
         return cpu_count
