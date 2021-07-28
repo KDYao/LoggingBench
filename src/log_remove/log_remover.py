@@ -458,7 +458,7 @@ class LogRemover:
 
         """
         try:
-            cmd = """grep -ri "%s" --include=*.java . | grep -E "%s" | awk '{print $1}'""" % (keyword, ('|'.join(function_names)))
+            cmd = """grep -ril "%s" --include="*.java" . | xargs grep -ilE "%s" """ % (keyword, ('|'.join(function_names)))
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         except Exception:
             logger.warn('Grepping command <-- %s -->failed at %s' % (cmd, d))
@@ -466,14 +466,14 @@ class LogRemover:
             cmd_rename = r"find . -name '*.java' -exec rename 's/[?<>\$\\:*|\"]/_/g' {} \;"
             subprocess.Popen(cmd_rename, shell=True, cwd=d).wait()
             # Redo grepping (not using recursion since we are uncertain if the unknown errors will cause an infinite loop)
-            cmd = """grep -ri "%s" --include=*.java . | grep -E "%s" | awk '{print $1}'""" % (
+            cmd = """grep -ril "%s" --include="*.java" . | xargs grep -ilE "%s" """ % (
             keyword, ('|'.join(function_names)))
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         try:
             out = out_raw.decode('utf-8')
         except UnicodeError:
             out = out_raw.decode('iso-8859-1')
-        return set([x[:-1] for x in out.split('\n') if x != ''])
+        return [x for x in out.split('\n') if x != '']
 
     def single_line_grep_logging(self, function_names, d):
         """
