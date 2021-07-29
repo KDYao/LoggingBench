@@ -317,11 +317,7 @@ class LogRemover:
                                         clean_project=False, keep_java_only=False)
                 return
 
-        # # # FIXME:###### Only for local testing
-        # ###########################
-        # repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
-        # if not os.path.isfile(repo_path): return
-        # ###########################
+        repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
 
         if not os.path.isfile(repo_path):
             logger.error('Cannot find project %s at %s' % (owner_repo, repo_path))
@@ -446,13 +442,15 @@ class LogRemover:
                 for filename in filenames:
                     if filename.endswith('.java'):
                         cmd = 'java -jar {f_jf} "{f_java}"'.format(f_jf=f_javaformatter, f_java=os.path.join(root, filename))
-                        subprocess.Popen(cmd, shell=True).wait()
+                        p = subprocess.Popen(cmd, shell=True)
+                        p.wait()
         else:
             for filename in files:
                 if filename.endswith('.java'):
                     cmd = 'java -jar {f_jf} "{f_java}"'.format(f_jf=f_javaformatter,
                                                                f_java=os.path.join(d, filename))
-                    subprocess.Popen(cmd, shell=True).wait()
+                    p = subprocess.Popen(cmd, shell=True)
+                    p.wait()
 
     def get_files_with_keyword(self, keyword, d, function_names):
         """
