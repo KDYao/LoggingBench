@@ -269,8 +269,12 @@ class LogRemover:
         with lock:
             if os.path.isfile(self.f_removal):
                 with open(self.f_removal, 'r+') as f_update:
+                    js = json.load(f_update)
+                    for k, v in new_json.items():
+                        # Update if project exists
+                        js[k] = v
                     f_update.seek(0)
-                    f_update.write(json.dumps(new_json, indent=4))
+                    f_update.write(json.dumps(js, indent=4))
                     f_update.truncate()
             else:
                 with open(self.f_removal, 'w') as f_update:
@@ -340,10 +344,13 @@ class LogRemover:
             with tarfile.open(archived_f, 'w:gz') as tar:
                 tar.add(tmp_out_dir, arcname=os.path.basename(tmp_out_dir))
 
-        if q is not None:
-            q.put([repo_id, proj_logging_removal])
-        # Record result in json
-        return (repo_id, proj_logging_removal)
+        if proj_logging_removal:
+            if q is not None:
+                q.put([repo_id, proj_logging_removal])
+            # Record result in json
+            return (repo_id, proj_logging_removal)
+        else:
+            return None
 
     def logging_remover_cu_line(self, d, function_names):
         """
@@ -362,7 +369,8 @@ class LogRemover:
         self.format_java(d=d, files=log_related_files)
 
         proj_logging_removal = self.single_line_grep_logging(function_names=function_names, d=d)
-        self.remove_logging_by_linenum(dict_removal=proj_logging_removal, d=d, function_names=function_names)
+        if proj_logging_removal:
+            self.remove_logging_by_linenum(dict_removal=proj_logging_removal, d=d, function_names=function_names)
         return proj_logging_removal
 
     def check_lambda(self, line):
@@ -493,10 +501,9 @@ class LogRemover:
             funcs='|'.join(function_names))
         try:
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
-        except subprocess.CalledProcessError as e:
-            print(e)
-            logger.error('Fail to excute command %s at %s' % (cmd, d))
-            return proj_logging_removal
+        except subprocess.CalledProcessError:
+            logger.warn('Fail to execute command %s at %s' % (cmd, d))
+            return None
         try:
             out = out_raw.decode('utf-8')
         except UnicodeError:
@@ -605,7 +612,6 @@ class LogRemover:
 
             if len(lst_replace_logging) > 0:
                 # Find logging statements and remove them
-                # TODO:
                 with open(f, 'r+') as fw:
                     f_lines = fw.readlines()
                     for line_id in lst_replace_logging:
