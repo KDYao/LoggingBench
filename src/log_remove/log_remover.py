@@ -15,13 +15,16 @@ import subprocess
 import multiprocessing
 from collections import defaultdict
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 import src.util.utils as ut
+
 logger = ut.setlogger(
     f_log='../../log/log_removal/log_removal.log',
     logger="log_remover",
 )
 lock = ut.setRWLock()
+
 
 class LogRemover:
     def __init__(self, f_removal,
@@ -92,7 +95,7 @@ class LogRemover:
 
         """
         with open(f) as r:
-         lu_levels = json.load(r)
+            lu_levels = json.load(r)
         return lu_levels
 
     def filter_row(self, row):
@@ -122,7 +125,6 @@ class LogRemover:
                 general_lus.append(x)
         return len(general_lus) > 0, general_lus
 
-
     def filter_projects_by_lus(self, df):
         """
         Filter projects by selected logging utilities
@@ -131,9 +133,7 @@ class LogRemover:
         """
         df = pd.merge(df, self.df_proj_lus, on='project_id')
         df[['is_general', 'general_lus']] = df.apply(func=self.filter_row, axis=1, result_type='expand')
-        return df[df['is_general'] is True]
-
-
+        return df[df['is_general'] == True]
 
     def project_sample(self, sample_percentage=0.1, overwrite=False):
         """
@@ -178,7 +178,6 @@ class LogRemover:
             ) for size_type in self.sample_sizes])
         df_merged = df_merged.loc[df_merged['project_id'].isin(proj_id_list)]
         return ut.convert_size(df_merged['size_mb'].sum() * 1024 * 1024)
-
 
     def logger_detector(self, repeat_idx):
         """
@@ -229,21 +228,20 @@ class LogRemover:
                 logging_remove_json_new[log_remove_repo_id] = log_remove_repo_detail
         self.dump_remove_logging_result(logging_remove_json_new)
 
-
     def remove_logging_multiprocessing(self, df, repeat_idx):
         # Preserve for parallelism
         jobs = []
         for d in ut.chunkify(df, ut.getWorkers()):
             jobs.append(
-                multiprocessing.Process(target=self.remove_logging_multithreading, args=(d, repeat_idx, ))
+                multiprocessing.Process(target=self.remove_logging_multithreading, args=(d, repeat_idx,))
             )
         [j.start() for j in jobs]
         [j.join() for j in jobs]
 
-
     def remove_logging_multithreading(self, df, repeat_idx):
         q = Queue()
-        ts = [threading.Thread(target=self.find_and_remove_logging, args=(row, repeat_idx, q,)) for idx, row in df.iterrows()]
+        ts = [threading.Thread(target=self.find_and_remove_logging, args=(row, repeat_idx, q,)) for idx, row in
+              df.iterrows()]
         for t in ts: t.start()
         for t in ts: t.join()
 
@@ -259,7 +257,6 @@ class LogRemover:
                 logging_remove_json_new[log_remove_repo_id] = log_remove_repo_detail
 
         self.dump_remove_logging_result(logging_remove_json_new)
-
 
     def dump_remove_logging_result(self, new_json):
         """
@@ -433,7 +430,6 @@ class LogRemover:
         if left_parenthesis != right_parenthesis: return False
         return True
 
-
     def format_java(self, d, files=None):
         """
         Convert Java format to eliminate the syntax error by multi-line greps
@@ -450,7 +446,8 @@ class LogRemover:
             for root, dirnames, filenames in os.walk(d):
                 for filename in filenames:
                     if filename.endswith('.java'):
-                        cmd = 'java -jar {f_jf} "{f_java}"'.format(f_jf=f_javaformatter, f_java=os.path.join(root, filename))
+                        cmd = 'java -jar {f_jf} "{f_java}"'.format(f_jf=f_javaformatter,
+                                                                   f_java=os.path.join(root, filename))
                         p = subprocess.Popen(cmd, shell=True)
                         p.wait()
         else:
@@ -473,7 +470,8 @@ class LogRemover:
 
         """
         try:
-            cmd = """grep -ril "%s" --include="*.java" . | xargs grep -ilE "%s" """ % (keyword, ('|'.join(function_names)))
+            cmd = """grep -ril "%s" --include="*.java" . | xargs grep -ilE "%s" """ % (
+                keyword, ('|'.join(function_names)))
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         except Exception:
             logger.warn('Grepping command <-- %s -->failed at %s' % (cmd, d))
@@ -623,7 +621,9 @@ class LogRemover:
                     for line_id in lst_replace_logging:
                         line_content = f_lines[line_id - 1]
                         try:
-                            line_logging = re.match('.*(.*log.*\.({levels})\(.*\))'.format(levels='|'.join(function_names)), line_content, re.IGNORECASE).groups()[0]
+                            line_logging = \
+                                re.match('.*(.*log.*\.({levels})\(.*\))'.format(levels='|'.join(function_names)),
+                                         line_content, re.IGNORECASE).groups()[0]
                             f_lines[line_id - 1] = line_content.replace(line_logging, '')
                         except Exception as e:
                             logger.error('Fail to replace logging statement in file: {file}, '
@@ -633,7 +633,6 @@ class LogRemover:
                     fw.seek(0)
                     fw.write('\n'.join(f_lines))
                     fw.truncate()
-
 
     def decompress_project(self, f_tar, out_d, clean_project=True, keep_java_only=True):
         """
