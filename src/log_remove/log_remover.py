@@ -31,9 +31,13 @@ class LogRemover:
                  sample_percentage=0.1,
                  is_remove_cleaned_project=False,
                  is_archive_cleaned_project=True):
-        self.sample_dir = sample_dir
-        if not os.path.isdir(sample_dir):
-            os.makedirs(sample_dir)
+        if isinstance(sample_percentage, float):
+            sample_dirname = '%d_p' % int(sample_percentage * 100)
+        elif isinstance(sample_percentage, int):
+            sample_dirname = '%d_n' % sample_percentage
+        self.sample_dir = os.path.join(sample_dir, sample_dirname)
+        if not os.path.isdir(self.sample_dir):
+            os.makedirs(self.sample_dir)
         self.f_removal = f_removal
         ut.create_folder_if_not_exist(os.path.dirname(f_removal))
         # f_removal records processed files and lines in JSON
@@ -47,7 +51,7 @@ class LogRemover:
         self.repeats = repeats
         self.lu_levels = self.load_lu_levels()
         self.df_proj_lus = self.load_lu_per_project(f_log_stats)
-        self.d_clean_project_root = ut.getPath('CLEANED_PROJ_ROOT', ischeck=False)
+        self.d_clean_project_root = os.path.join(ut.getPath('CLEANED_PROJ_ROOT', ischeck=False), sample_dirname)
         ut.create_folder_if_not_exist(self.d_clean_project_root)
         # Generate sampled projects from each size
         self.project_sample(sample_percentage=sample_percentage)
@@ -145,6 +149,7 @@ class LogRemover:
         """
         sloc_dir = '../../result/proj_sloc'
         ut.print_msg_box('Sample {}% projects from each size'.format(sample_percentage * 100))
+        # If sample dir
         # Concatenate all size types to be analyzed
         for repeat in range(1, self.repeats + 1):
             for size_type in self.sample_sizes:
