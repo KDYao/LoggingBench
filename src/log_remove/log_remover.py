@@ -474,7 +474,7 @@ class LogRemover:
                 keyword, ('|'.join(function_names)))
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         except Exception:
-            logger.warn('Grepping command <-- %s -->failed at %s' % (cmd, d))
+            logger.warning('Grepping command <-- %s -->failed at %s' % (cmd, d))
             # # Rename all files with special characters
             # cmd_rename = r"find . -name '*.java' -exec rename 's/[?<>\$\\:*|\"]/_/g' {} \;"
             # subprocess.Popen(cmd_rename, shell=True, cwd=d).wait()
@@ -506,7 +506,7 @@ class LogRemover:
         try:
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         except subprocess.CalledProcessError:
-            logger.warn('Fail to execute command %s at %s' % (cmd, d))
+            logger.warning('Fail to execute command %s at %s' % (cmd, d))
             return None
         try:
             out = out_raw.decode('utf-8')
