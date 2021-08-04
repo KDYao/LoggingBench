@@ -28,6 +28,7 @@ class LogRemover:
                  sample_dir='../../result/proj_sample',
                  f_log_stats='../../conf/log_all_stats.csv',
                  repeats=1,
+                 sample_percentage=0.1,
                  is_remove_cleaned_project=False,
                  is_archive_cleaned_project=True):
         self.sample_dir = sample_dir
@@ -49,7 +50,7 @@ class LogRemover:
         self.d_clean_project_root = ut.getPath('CLEANED_PROJ_ROOT', ischeck=False)
         ut.create_folder_if_not_exist(self.d_clean_project_root)
         # Generate sampled projects from each size
-        self.project_sample()
+        self.project_sample(sample_percentage=sample_percentage)
         self.is_remove_cleaned_project = is_remove_cleaned_project
         self.is_archive_cleaned_project = is_archive_cleaned_project
         self.archive_dir = ut.getPath('CLEAN_REPO_ARCHIVE_ROOT')
@@ -656,6 +657,6 @@ class LogRemover:
 
 if __name__ == '__main__':
     f_removal = '../../result/log_remove/logging_removal_lines.json'
-    logremover = LogRemover(f_removal)
+    logremover = LogRemover(f_removal=f_removal, sample_percentage=0.01)
     for repeat_idx in range(1, 1 + logremover.repeats):
         logremover.logger_detector(repeat_idx)
