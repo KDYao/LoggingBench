@@ -330,7 +330,10 @@ class LogRemover:
         general_lus = ast.literal_eval(row['general_lus'])
         function_names = set(itertools.chain.from_iterable([self.lu_levels[lu] for lu in general_lus]))
 
-        proj_logging_removal = self.logging_remover_cu_line(d=tmp_out_dir, function_names=function_names)
+        try:
+            proj_logging_removal = self.logging_remover_cu_line(d=tmp_out_dir, function_names=function_names)
+        except Exception:
+            logger.warning("Fail to remove logging in project %s. Either no logging or command failed." % owner_repo)
 
         # If remove cleaned project from temp folder
         if self.is_remove_cleaned_project:
@@ -469,12 +472,11 @@ class LogRemover:
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         except Exception:
             logger.warn('Grepping command <-- %s -->failed at %s' % (cmd, d))
-            # Rename all files with special characters
-            cmd_rename = r"find . -name '*.java' -exec rename 's/[?<>\$\\:*|\"]/_/g' {} \;"
-            subprocess.Popen(cmd_rename, shell=True, cwd=d).wait()
+            # # Rename all files with special characters
+            # cmd_rename = r"find . -name '*.java' -exec rename 's/[?<>\$\\:*|\"]/_/g' {} \;"
+            # subprocess.Popen(cmd_rename, shell=True, cwd=d).wait()
             # Redo grepping (not using recursion since we are uncertain if the unknown errors will cause an infinite loop)
-            cmd = """grep -ril "%s" --include="*.java" . | xargs grep -ilE "%s" """ % (
-            keyword, ('|'.join(function_names)))
+            cmd = 'grep -ril "%s" --include="*.java"' % keyword
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         try:
             out = out_raw.decode('utf-8')
