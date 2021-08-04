@@ -319,6 +319,10 @@ class LogRemover:
                 self.decompress_project(f_tar=archived_f, out_d=os.path.dirname(tmp_out_dir),
                                         clean_project=False, keep_java_only=False)
                 return
+            elif os.path.isdir(tmp_out_dir):
+                # If file was not archived, which means previous logging removal failed
+                # We will remove this folder and reexamine
+                shutil.rmtree(tmp_out_dir)
 
         repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
 
