@@ -299,6 +299,9 @@ class LogRemover:
         repo_id = int(row['project_id'])
         owner_repo = row['owner_repo']
 
+        # The previously removed logging recorded for this project
+        stored_proj_logging_removal = None
+
         # Temp location to store project
         tmp_out_dir = os.path.abspath(os.path.join(
             *[self.d_clean_project_root, 'repeat_%d' % repeat_idx, str(repo_id)]
@@ -312,17 +315,24 @@ class LogRemover:
                 print('Project %s has already been log removed; skip' % owner_repo)
                 return
             # If cleaned project not in temp, but in archived location
-            elif os.path.isfile(archived_f):
-                # Decompress previously cleaned project from archived file
-                # The project has java only so no need to remove non-java files
-                print('Cleaned project %s found. Decompressing previously archived project' % owner_repo)
-                self.decompress_project(f_tar=archived_f, out_d=os.path.dirname(tmp_out_dir),
-                                        clean_project=False, keep_java_only=False)
-                return
-            elif os.path.isdir(tmp_out_dir):
-                # If file was not archived, which means previous logging removal failed
-                # We will remove this folder and reexamine
-                shutil.rmtree(tmp_out_dir)
+            else:
+                if os.path.isfile(archived_f):
+                    # Decompress previously cleaned project from archived file
+                    # The project has java only so no need to remove non-java files
+                    print('Cleaned project %s found. Decompressing previously archived project' % owner_repo)
+                    self.decompress_project(f_tar=archived_f, out_d=os.path.dirname(tmp_out_dir),
+                                            clean_project=False, keep_java_only=False)
+                    return
+                else:
+                    # If archived file does not exist, while logging removal info is on file
+                    # This happens when we move to a new machine
+                    # We will skip the logging file grepping, instead we will jump to the logging removal part
+                    stored_proj_logging_removal = self.logging_remove_json[str(repo_id)]
+
+        elif os.path.isdir(tmp_out_dir):
+            # If file was not archived, which means previous logging removal failed
+            # We will remove this folder and reexamine
+            shutil.rmtree(tmp_out_dir)
 
         repo_path = os.path.join(ut.getPath('REPO_ZIPPED_ROOT'), os.path.basename(repo_path))
 
@@ -337,9 +347,12 @@ class LogRemover:
         function_names = set(itertools.chain.from_iterable([self.lu_levels[lu] for lu in general_lus]))
 
         try:
-            proj_logging_removal = self.logging_remover_cu_line(d=tmp_out_dir, function_names=function_names)
+            proj_logging_removal = self.logging_remover_cu_line(d=tmp_out_dir,
+                                                                function_names=function_names,
+                                                                stored_proj_logging_removal=stored_proj_logging_removal)
         except Exception:
             logger.warning("Fail to remove logging in project %s. Either no logging or command failed." % owner_repo)
+            proj_logging_removal = None
 
         # If remove cleaned project from temp folder
         if self.is_remove_cleaned_project:
@@ -358,7 +371,7 @@ class LogRemover:
         else:
             return None
 
-    def logging_remover_cu_line(self, d, function_names):
+    def logging_remover_cu_line(self, d, function_names, stored_proj_logging_removal=None):
         """
         Convert java files with keyword "log" to Compilation Unit then perform single line grep
         Parameters
@@ -374,7 +387,12 @@ class LogRemover:
         log_related_files = self.get_files_with_keyword(keyword='log', d=d, function_names=function_names)
         self.format_java(d=d, files=log_related_files)
 
-        proj_logging_removal = self.single_line_grep_logging(function_names=function_names, d=d)
+        if stored_proj_logging_removal:
+            proj_logging_removal = stored_proj_logging_removal
+        else:
+            # If logging removal for this project is not recorded
+            proj_logging_removal = self.single_line_grep_logging(function_names=function_names, d=d)
+        del stored_proj_logging_removal
         if proj_logging_removal:
             self.remove_logging_by_linenum(dict_removal=proj_logging_removal, d=d, function_names=function_names)
         return proj_logging_removal
