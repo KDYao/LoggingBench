@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 import src.util.utils as ut
 
 logger = ut.setlogger(
-    f_log='../../log/log_removal/log_removal.log',
+    f_log='log/log_removal/log_removal.log',
     logger="log_remover",
 )
 lock = ut.setRWLock()
@@ -28,19 +28,14 @@ lock = ut.setRWLock()
 
 class LogRemover:
     def __init__(self, f_removal,
-                 sample_dir='../../result/proj_sample',
-                 f_log_stats='../../conf/log_all_stats.csv',
+                 sample_dir='result/proj_sample',
+                 f_log_stats='conf/log_all_stats.csv',
                  repeats=1,
                  sample_percentage=0.1,
+                 sample_sizes=['small', 'medium', 'large', 'vlarge'],
                  is_remove_cleaned_project=False,
                  is_archive_cleaned_project=True):
-        if isinstance(sample_percentage, float):
-            sample_dirname = '%d_p' % int(sample_percentage * 100)
-        elif isinstance(sample_percentage, int):
-            sample_dirname = '%d_n' % sample_percentage
-        self.sample_dir = os.path.join(sample_dir, sample_dirname)
-        if not os.path.isdir(self.sample_dir):
-            os.makedirs(self.sample_dir)
+
         self.f_removal = f_removal
         ut.create_folder_if_not_exist(os.path.dirname(f_removal))
         # f_removal records processed files and lines in JSON
@@ -49,20 +44,33 @@ class LogRemover:
                 self.logging_remove_json = json.load(r)
         else:
             self.logging_remove_json = defaultdict(dict)
-        self.d_proj_size = '../../result/proj_size'
-        self.sample_sizes = ['small', 'medium', 'large', 'vlarge']
+
+        self.d_proj_size = 'result/proj_size'
+        self.sample_sizes = sample_sizes
         self.repeats = repeats
         self.lu_levels = self.load_lu_levels()
         self.df_proj_lus = self.load_lu_per_project(f_log_stats)
-        self.d_clean_project_root = os.path.join(ut.getPath('CLEANED_PROJ_ROOT', ischeck=False), sample_dirname)
-        ut.create_folder_if_not_exist(self.d_clean_project_root)
-        # Generate sampled projects from each size
-        self.project_sample(sample_percentage=sample_percentage)
         self.is_remove_cleaned_project = is_remove_cleaned_project
         self.is_archive_cleaned_project = is_archive_cleaned_project
         self.archive_dir = ut.getPath('CLEAN_REPO_ARCHIVE_ROOT')
         if is_archive_cleaned_project:
             ut.create_folder_if_not_exist(self.archive_dir)
+        if repeats ==0:
+            sample_dirname = 'inner_proj_clone_detection'
+            self.sample_dir = sample_dir
+        else:
+            if isinstance(sample_percentage, float):
+                sample_dirname = os.path.join('projects_clean', '%d_p' % int(sample_percentage * 100))
+            elif isinstance(sample_percentage, int):
+                sample_dirname = os.path.join('projects_clean', '%d_n' % sample_percentage)
+            self.sample_dir = os.path.join(sample_dir, sample_dirname)
+        if not os.path.isdir(self.sample_dir):
+            os.makedirs(self.sample_dir)
+        
+        # Generate sampled projects from each size
+        self.project_sample(sample_percentage=sample_percentage)
+        self.d_clean_project_root = os.path.join(ut.getPath('TEMP_PROJ_ROOT', ischeck=False), sample_dirname)
+        ut.create_folder_if_not_exist(self.d_clean_project_root)
 
     def load_lu_per_project(self, f):
         """
@@ -82,7 +90,7 @@ class LogRemover:
         keep_cols = ['project_id', 'others'] + [x for x in self.lu_levels.keys() if x in df.columns]
         return df[keep_cols]
 
-    def load_lu_levels(self, f='../../conf/lu_levels.json'):
+    def load_lu_levels(self, f='conf/lu_levels.json'):
         """
         Load logging utilities
         Parameters
@@ -147,23 +155,45 @@ class LogRemover:
         -------
 
         """
-        sloc_dir = '../../result/proj_sloc'
-        ut.print_msg_box('Sample {}% projects from each size'.format(sample_percentage * 100))
-        # If sample dir
+        sloc_dir = 'result/proj_sloc'
+        if 0.0 < sample_percentage < 1.0:
+            ut.print_msg_box('Sample {}% projects from each size'.format(sample_percentage * 100))
+        elif sample_percentage == 1.0:
+            ut.print_msg_box('Iterate all selected projects from each size (filtered by LU)')
+        elif sample_percentage == 0.0:
+            raise ValueError('Not projects are selected at sample rate equals to 0.0')
+        else:
+            raise ValueError('Not a proper sample rate. Sample rate should be in range')
+        
         # Concatenate all size types to be analyzed
-        for repeat in range(1, self.repeats + 1):
+        if self.repeats == 0:
             for size_type in self.sample_sizes:
-                f_projects_sample = os.path.join(self.sample_dir, 'sample_{}_sloc_{}.csv'.format(repeat, size_type))
-                if os.path.isfile(f_projects_sample):
+                f_projects_inner_clone = os.path.join(self.sample_dir, 'inner_project_clone_sloc_{}.csv'.format(size_type))
+                if os.path.isfile(f_projects_inner_clone):
                     if overwrite:
-                        print('Overwrite existing project {}'.format(os.path.basename(f_projects_sample)))
+                        print('Overwrite existing project {}'.format(os.path.basename(f_projects_inner_clone)))
                     else:
-                        print('Sample projects already exist in {}; skip'.format(os.path.basename(f_projects_sample)))
+                        print('Sample projects already exist in {}; skip'.format(os.path.basename(f_projects_inner_clone)))
                         continue
                 df_projects = ut.csv_loader(os.path.join(sloc_dir, 'filesize_sloc_{}.csv'.format(size_type)))
                 df_projects = self.filter_projects_by_lus(df=df_projects)
-                df_projects_sample = df_projects.sample(frac=sample_percentage, random_state=repeat)
-                df_projects_sample.to_csv(f_projects_sample, index=False)
+                df_projects.to_csv(f_projects_inner_clone, index=False) 
+        else:
+            # If sample dir
+            for repeat in range(1, self.repeats + 1):
+                for size_type in self.sample_sizes:
+                    f_projects_sample = os.path.join(self.sample_dir, 'sample_{}_sloc_{}.csv'.format(repeat, size_type))
+                    if os.path.isfile(f_projects_sample):
+                        if overwrite:
+                            print('Overwrite existing project {}'.format(os.path.basename(f_projects_sample)))
+                        else:
+                            print('Sample projects already exist in {}; skip'.format(os.path.basename(f_projects_sample)))
+                            continue
+                    df_projects = ut.csv_loader(os.path.join(sloc_dir, 'filesize_sloc_{}.csv'.format(size_type)))
+                    df_projects = self.filter_projects_by_lus(df=df_projects)
+                    df_projects_sample = df_projects.sample(frac=sample_percentage, random_state=repeat)
+                    df_projects_sample.to_csv(f_projects_sample, index=False)
+    
 
     def get_total_project_size(self, proj_id_list):
         """
@@ -283,7 +313,7 @@ class LogRemover:
                 with open(self.f_removal, 'w') as f_update:
                     f_update.write(json.dumps(new_json, indent=4))
 
-    def find_and_remove_logging(self, row, repeat_idx, q=None):
+    def find_and_remove_logging(self, row, repeat_idx=None, q=None):
         """
         Decompress selected java projects and remove logging statements from them
         Parameters
@@ -302,10 +332,15 @@ class LogRemover:
         # The previously removed logging recorded for this project
         stored_proj_logging_removal = None
 
-        # Temp location to store project
-        tmp_out_dir = os.path.abspath(os.path.join(
-            *[self.d_clean_project_root, 'repeat_%d' % repeat_idx, str(repo_id)]
-        ))
+        if repeat_idx:
+            # Temp location to store project
+            tmp_out_dir = os.path.abspath(os.path.join(
+                *[self.d_clean_project_root, 'repeat_%d' % repeat_idx, str(repo_id)]
+            ))
+        else:
+            tmp_out_dir = os.path.abspath(os.path.join(
+                *[self.d_clean_project_root, str(repo_id)]
+            ))
         # Archived file location
         archived_f = os.path.join(self.archive_dir, '%s.tar.gz' % str(repo_id))
 
@@ -630,6 +665,12 @@ class LogRemover:
             # The lines can simply replace whole line
             lst_replace_line = []
 
+            f = os.path.join(d, f_path)
+            if not os.path.isfile(f):
+                # In case some error caused by renaming
+                logger.error('Did not find recorded filepath from folder: %s' % f)
+                continue
+
             for line_id, line_content_info in line_info.items():
                 if line_content_info['linetype'] == 'lambda':
                     pass
@@ -637,7 +678,7 @@ class LogRemover:
                     lst_replace_logging.append(line_id)
                 else:
                     lst_replace_line.append(line_id)
-            f = os.path.join(d, f_path)
+            
             if len(lst_replace_line) > 0:
                 # Remove logging statements by line number
                 # Cannot write to original file directly since > has a higher priority
@@ -698,7 +739,7 @@ class LogRemover:
 
 
 if __name__ == '__main__':
-    f_removal = '../../result/log_remove/logging_removal_lines.json'
+    f_removal = 'result/log_remove/logging_removal_lines.json'
     logremover = LogRemover(f_removal=f_removal, sample_percentage=0.01)
     for repeat_idx in range(1, 1 + logremover.repeats):
         logremover.logger_detector(repeat_idx)
