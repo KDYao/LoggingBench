@@ -68,7 +68,7 @@ def parse_args_size_level(*args, **kwargs):
     return parser.parse_known_args()
 
 def parse_args_clone_detection(*args, **kwargs):
-    parser = argparse.ArgumentParser(description='Input args for calculating the size/SLOC of a project', *args, **kwargs)
+    parser = argparse.ArgumentParser(description='Input args for inner project clones of a project', *args, **kwargs)
     parser.add_argument('-l',
                         '--size_level',
                         type=str,
@@ -83,6 +83,15 @@ def parse_args_clone_detection(*args, **kwargs):
                         You can specify on level or multiple levels joined by comma
                         """,
                         required=True)
+    # Compatible with python version < 3.9
+    parser.add_argument('--remove_logging',
+                        action='store_true',
+                        dest='remove_logging',
+                        help="Remove logging statements from source code. This will include transforming source code into Compilation Unit")
+    parser.add_argument('--no_remove_logging',
+                        action='store_false',
+                        dest='remove_logging',
+                        help="DO NOT Remove logging statements from source code. This will NOT include transforming source code into Compilation Unit")                    
     parser.add_argument('--language',
                         type=str,
                         default='java',
@@ -142,12 +151,12 @@ def getPath(param_str: str, ischeck=False):
                 'PINKY': '/home/local/SAIL/kundi/configs/NiCad-6.2'
             }
         },
-        'CLEANED_PROJ_ROOT': {
+        'TEMP_PROJ_ROOT': {
             # OS
-            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/temp/projects_clean',
+            'DARWIN': '/Users/yaokundi/Documents/Project/2021/LoggingBench/temp',
             'LINUX': {
-                'BRAIN2': '/home/local/SAIL/kundi/project/LoggingBench/temp/projects_clean',
-                'PINKY': '/home/local/SAIL/kundi/project/LoggingBench/temp/projects_clean',
+                'BRAIN2': '/home/local/SAIL/kundi/project/LoggingBench/temp',
+                'PINKY': '/home/local/SAIL/kundi/project/LoggingBench/temp',
                 'COMPUTECANADA': ''
             }
         },
@@ -354,3 +363,4 @@ def convert_size(size_bytes):
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return "%s %s" % (s, size_name[i])
+
