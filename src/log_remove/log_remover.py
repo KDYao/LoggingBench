@@ -329,7 +329,7 @@ class LogRemover:
                     # We will skip the logging file grepping, instead we will jump to the logging removal part
                     stored_proj_logging_removal = self.logging_remove_json[str(repo_id)]
 
-        elif os.path.isdir(tmp_out_dir):
+        if os.path.isdir(tmp_out_dir):
             # If file was not archived, which means previous logging removal failed
             # We will remove this folder and reexamine
             shutil.rmtree(tmp_out_dir)
@@ -383,7 +383,7 @@ class LogRemover:
         -------
 
         """
-
+        self.rename_files(d=d)
         log_related_files = self.get_files_with_keyword(keyword='log', d=d, function_names=function_names)
         self.format_java(d=d, files=log_related_files)
 
@@ -396,6 +396,23 @@ class LogRemover:
         if proj_logging_removal:
             self.remove_logging_by_linenum(dict_removal=proj_logging_removal, d=d, function_names=function_names)
         return proj_logging_removal
+
+    def rename_files(self, d):
+        """
+        Certain file path contain special chars which may cause error when reading
+        We replace all special chars to underline _
+        However, this may not solve all the issues
+        Parameters
+        ----------
+        d
+
+        Returns
+        -------
+
+        """
+        # Rename all files with special characters
+        cmd_rename = r"find . -name '*.java' -exec rename 's/[?<>\$\\:*|\"]/_/g' {} \;"
+        subprocess.Popen(cmd_rename, shell=True, cwd=d).wait()
 
     def check_lambda(self, line):
         """
@@ -497,9 +514,6 @@ class LogRemover:
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
         except Exception:
             logger.warning('Grepping command <-- %s -->failed at %s' % (cmd, d))
-            # # Rename all files with special characters
-            # cmd_rename = r"find . -name '*.java' -exec rename 's/[?<>\$\\:*|\"]/_/g' {} \;"
-            # subprocess.Popen(cmd_rename, shell=True, cwd=d).wait()
             # Redo grepping (not using recursion since we are uncertain if the unknown errors will cause an infinite loop)
             cmd = 'grep -ril "%s" --include="*.java"' % keyword
             out_raw = subprocess.check_output(cmd, shell=True, cwd=d)
