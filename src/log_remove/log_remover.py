@@ -9,6 +9,7 @@ import os
 import re
 import itertools
 import json
+from numpy import True_
 import pandas as pd
 import ast
 import subprocess
@@ -34,7 +35,8 @@ class LogRemover:
                  sample_percentage=0.1,
                  sample_sizes=['small', 'medium', 'large', 'vlarge'],
                  is_remove_cleaned_project=False,
-                 is_archive_cleaned_project=True):
+                 is_archive_cleaned_project=True,
+                 is_ignore_failed_clone_detections=True):
 
         self.f_removal = f_removal
         ut.create_folder_if_not_exist(os.path.dirname(f_removal))
@@ -52,6 +54,9 @@ class LogRemover:
         self.df_proj_lus = self.load_lu_per_project(f_log_stats)
         self.is_remove_cleaned_project = is_remove_cleaned_project
         self.is_archive_cleaned_project = is_archive_cleaned_project
+        self.is_ignore_failed_clone_detections = is_ignore_failed_clone_detections
+        if is_ignore_failed_clone_detections:
+            self.ignore_projects = self._get_ignored_projects()
         self.archive_dir = ut.getPath('CLEAN_REPO_ARCHIVE_ROOT')
         if is_archive_cleaned_project:
             ut.create_folder_if_not_exist(self.archive_dir)
@@ -136,12 +141,23 @@ class LogRemover:
     def filter_projects_by_lus(self, df):
         """
         Filter projects by selected logging utilities
+        Parameters
+        -------
+        df: The dataframe to be processed
         Returns
         -------
         """
         df = pd.merge(df, self.df_proj_lus, on='project_id')
         df[['is_general', 'general_lus']] = df.apply(func=self.filter_row, axis=1, result_type='expand')
         return df[df['is_general'] == True]
+
+    def _get_ignored_projects(self):
+        """
+        Filter projects that cannot be parsed in NiCad
+        """
+        f_failed = 'result/clone_detection/clone_detection_check.csv'
+        df_failed = pd.read_csv(f_failed)
+        return list(df_failed.loc[df_failed['NiCadPassed']==False]['project_id'])
 
     def project_sample(self, sample_percentage=0.1, overwrite=False):
         """
@@ -190,6 +206,8 @@ class LogRemover:
                             print('Sample projects already exist in {}; skip'.format(os.path.basename(f_projects_sample)))
                             continue
                     df_projects = ut.csv_loader(os.path.join(sloc_dir, 'filesize_sloc_{}.csv'.format(size_type)))
+                    if self.is_ignore_failed_clone_detections:
+                        df_projects = df_projects.loc[~df_projects['project_id'].isin(self.ignore_projects)]
                     df_projects = self.filter_projects_by_lus(df=df_projects)
                     df_projects_sample = df_projects.sample(frac=sample_percentage, random_state=repeat)
                     df_projects_sample.to_csv(f_projects_sample, index=False)
@@ -740,6 +758,6 @@ class LogRemover:
 
 if __name__ == '__main__':
     f_removal = 'result/log_remove/logging_removal_lines.json'
-    logremover = LogRemover(f_removal=f_removal, sample_percentage=0.01)
+    logremover = LogRemover(f_removal=f_removal, sample_percentage=0.1)
     for repeat_idx in range(1, 1 + logremover.repeats):
         logremover.logger_detector(repeat_idx)
